@@ -1,16 +1,35 @@
 CC=gcc
-CFLAGS=-I"C:\Users\cjh\Desktop\20233144"
-LDFLAGS=-L"C:\Users\cjh\Desktop\20233144" -lpdcurses
+CFLAGS=-I./
+
+# 기본 LDFLAGS 설정
+LDFLAGS=-L./
 
 TARGET=20233144
 SRC=20233144.c
-OBJ=$(SRC:.c=.o)
 
+OBJ=$(SRC:.c=.o)
+# 운영 체제 확인
+ifeq ($(OS),Windows_NT)
+    RM = del /Q
+    LDFLAGS += -lpdcurses
+    
 $(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+else
+    RM = rm -f
+    LDFLAGS += -lncurses    
+$(TARGET): $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
+	$(CC) -c -o $@ $<
+
+endif
+
+
 clean:
-	del $(OBJ) $(TARGET)
+	$(RM) $(OBJ) $(TARGET)
