@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef WIN32
     #include <curses.h>
@@ -22,7 +23,7 @@ void init(){
 	tail->next = tail;
 }
 
-void processKeyInput() {
+void processKeyInput(int *x, int *y) {
     int ch;
     int done = 0;
 
@@ -86,12 +87,20 @@ void insertnode(){
 //	}	
 }
 
-int main(){
+int main(int argc, char*argv[]){
+	int x,y;
 	init();
 	initscr();            // curses 모드 시작
     cbreak();             // 버퍼링 없이 각 키 입력을 즉시 받음
-    noecho();             // 입력된 키를 화면에 표시하지 않음
+    noecho();    
     keypad(stdscr, TRUE); // 특수 키 입력 활성화
+    move(x,y);
+    processKeyInput(&x, &y);
+	if(argc==1){
+		
+	}else if(argc==2){
+		fopen
+	}
     processKeyInput();    // 키 입력 처리 함수 호출
     endwin();             // curses 모드 종료
 	
