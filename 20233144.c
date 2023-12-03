@@ -75,25 +75,46 @@ void printFileContent(const char *filename) {
 }
 
 
-void processKeyInput(int *x, int *y) {
+void processKeyInput() {
     int ch;
+    int x, y;
+    getyx(stdscr, y, x);
+    move(y, x);
     line *currentLine = head;
 
     while (1) {
+    	
         ch = getch(); // 키 입력 받기
 		
         switch (ch) {
             case KEY_UP:
-                printw("Up arrow\n");
-                break;
-            case KEY_DOWN:
-                printw("Down arrow\n");
-                break;
+    if (y > 0) {
+        currentLine = currentLine->prev; // 이전 라인으로 이동
+        y--;
+        x = strlen(currentLine->text);
+        move(y, x);
+    }
+    break;
+
+case KEY_DOWN:
+    if (currentLine->next && currentLine->next != tail) {
+        currentLine = currentLine->next; // 다음 라인으로 이동
+        y++;
+        x = strlen(currentLine->text);
+        move(y, x);
+    }
+    break;
             case KEY_LEFT:
-                printw("Left arrow\n");
+                if (x > 0) {
+                    x--;
+                    move(y, x);
+                }
                 break;
             case KEY_RIGHT:
-                printw("Right arrow\n");
+                if (x < strlen(currentLine->text)) {
+                    x++;
+                    move(y, x);
+                }
                 break;
             case KEY_HOME:
                 printw("Home key\n");
@@ -110,28 +131,27 @@ void processKeyInput(int *x, int *y) {
             case '\n': // Enter key
                 // 새 라인 추가
                 currentLine = addLine(currentLine, "");
-                (*y)++; // y 값을 업데이트
-                move(*y, 0); // 다음 라인으로 커서 이동
+                y++; // y 값을 업데이트
+                move(y, 0); // 다음 라인으로 커서 이동
                 break;
             case KEY_BACKSPACE:
             case '\b':
             case 127: // 백스페이스 키 처리
-                if (*x > 0) {
-                    // 현재 라인에서 문자 삭제
+                if (x > 0) {
                     int len = strlen(currentLine->text);
                     if (len > 0) {
                         currentLine->text[len - 1] = '\0';
-                        move(*y, --(*x));
+                        move(y, --x);
                         delch();
                     }
-                } else if (*y > 0) {
+                } else if (y > 0) {
                     // 이전 라인으로 이동
                     currentLine = currentLine->prev;
-                    *y = *y - 1;
-                    *x = strlen(currentLine->text);
-                    move(*y, *x);
+                    y = y - 1;
+                    x = strlen(currentLine->text);
+                    move(y, x);
                 }
-                
+            
                 break;
 
 
@@ -145,37 +165,25 @@ void processKeyInput(int *x, int *y) {
                 currentLine->text[len + 1] = '\0';
                 printw("%c", ch); // 화면에 문자 출력
                 break;
+            
+        	move(y, x);
         }
     }
 }
 
-void insertnode(){
-	line* newnode;
-	newnode = (line*)malloc(sizeof(line));
-	//scanf("%s", &newnode->text);
-	//newnode->next=tail;
-	
-//	if(head->next==tail){
-//		head->next=newnode;
-//		newnode->prev=head;
-//		newnode->next=tail;
-//		tail->prev=newnode;
-//		return;
-//	}	
-}
-
 int main(int argc, char*argv[]){
+	
 	int x=0,y=0;
 	FILE *file;
 	init();
 	initscr();            // curses 모드 시작
     cbreak();             // 버퍼링 없이 각 키 입력을 즉시 받음
-    noecho();    
-    getyx(stdscr, x,y);
-    move(x,y);
+    noecho();
+    resize_term(0, 0);     // PDCurses 윈도우 크기 조
+    keypad(stdscr, TRUE); // 특수 키 입력 활성화
 	if(argc==1){
 		
-		processKeyInput(&x, &y); 
+		processKeyInput(); 
 	}else if(argc==2){
 		printFileContent(argv[1]);
         refresh();
@@ -186,10 +194,9 @@ int main(int argc, char*argv[]){
         endwin();
         exit(EXIT_FAILURE);
         }
-        keypad(stdscr, TRUE); // 특수 키 입력 활성화
-		processKeyInput(&x, &y); 
+		processKeyInput(); 
         // 파일 내용을 읽고 처리하는 코드를 여기에 추가하세요.
         fclose(file);
 	}
-    endwin();             // curses 모드 종료
+    endwin();         // curses 모드 종료
 }
