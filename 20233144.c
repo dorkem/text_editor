@@ -26,14 +26,14 @@ void init() {
     tail->next = NULL;
 }
 
-line* addLine(line *tail, const char *text) {
+line* addLine(line *current, const char *text) {
     line *newLine = (line *)malloc(sizeof(line));
     newLine->text = strdup(text); // 문자열 복사
     newLine->next = NULL;
-    newLine->prev = tail;
+    newLine->prev = current;
 
-    if (tail) {
-        tail->next = newLine;
+    if (current) {
+        current->next = newLine;
     }
 
     return newLine;
@@ -133,6 +133,7 @@ case KEY_DOWN:
                 currentLine = addLine(currentLine, "");
                 y++; // y 값을 업데이트
                 move(y, 0); // 다음 라인으로 커서 이동
+            	x = 0;
                 break;
             case KEY_BACKSPACE:
             case '\b':
@@ -160,20 +161,22 @@ case KEY_DOWN:
             default:
                 // 현재 라인에 문자 추가
                 int len = strlen(currentLine->text);
-                currentLine->text = realloc(currentLine->text, len + 2);
-                currentLine->text[len] = ch;
-                currentLine->text[len + 1] = '\0';
-                printw("%c", ch); // 화면에 문자 출력
-                break;
-            
-        	move(y, x);
+    char *newText = (char*)realloc(currentLine->text, len + 2); // 문자열 재할당
+    // 커서 위치 이후의 문자들을 오른쪽으로 이동
+    memmove(newText + x + 1, newText + x, len - x + 1);
+    newText[x] = ch; // 커서 위치에 새 문자 삽입
+    currentLine->text = newText;
+    // 화면 갱신을 위해 현재 라인을 다시 출력
+    move(y, 0);
+    printw("%s", currentLine->text);
+    x++; // 커서 위치 업데이트
+    move(y, x);
+    break;
         }
     }
 }
 
 int main(int argc, char*argv[]){
-	
-	int x=0,y=0;
 	FILE *file;
 	init();
 	initscr();            // curses 모드 시작
